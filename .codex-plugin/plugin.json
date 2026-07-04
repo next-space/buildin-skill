@@ -1,0 +1,36 @@
+{
+  "name": "buildin-skill",
+  "version": "0.1.9",
+  "description": "Buildin CLI bootstrap skill for Codex.",
+  "author": {
+    "name": "Buildin",
+    "url": "https://buildin.ai"
+  },
+  "homepage": "https://buildin.ai/dev/integrations",
+  "license": "MIT",
+  "keywords": [
+    "buildin",
+    "codex",
+    "skill",
+    "cli",
+    "api"
+  ],
+  "skills": "./skills/buildin-cli",
+  "interface": {
+    "displayName": "Buildin CLI Skill",
+    "shortDescription": "Buildin CLI bootstrap skill.",
+    "longDescription": "Lightweight skill that directs coding agents to use Buildin CLI help as the source of truth, with JSON output, authentication, and write-safety conventions.",
+    "developerName": "Buildin",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://buildin.ai",
+    "defaultPrompt": [
+      "Use the Buildin CLI skill to inspect my Buildin auth state."
+    ],
+    "brandColor": "#2563EB"
+  }
+}
+

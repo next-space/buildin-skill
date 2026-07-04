@@ -1,0 +1,19 @@
+{
+  "name": "buildin-agent-skills",
+  "metadata": {
+    "description": "Buildin CLI bootstrap skill for using the V2 API.",
+    "version": "0.1.9"
+  },
+  "plugins": [
+    {
+      "name": "buildin-skill",
+      "description": "Buildin CLI bootstrap skill for coding agents.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/buildin-cli"
+      ]
+    }
+  ]
+}
+

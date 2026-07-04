@@ -1,0 +1,5 @@
+interface:
+  display_name: "Buildin CLI"
+  short_description: "Use the Buildin CLI to call APIs, manage content, and upload files."
+  default_prompt: "Use $buildin-cli to inspect Buildin CLI help, authenticate if needed, and run Buildin commands safely."
+
