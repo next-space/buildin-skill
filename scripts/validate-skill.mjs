@@ -10,6 +10,8 @@ const productName = 'Buildin';
 const commandName = 'buildin';
 const tokenEnv = 'BUILDIN_TOKEN';
 const productUrl = 'https://buildin.ai';
+const installUrl = 'https://cdn.buildin.ai/buildin-cli/install';
+const windowsInstallUrl = 'https://cdn.buildin.ai/buildin-cli/install.ps1';
 const forbiddenTerms = ['Flow' + 'Us', 'flow' + 'us', 'FLOW' + 'US'];
 
 const errors = [];
@@ -64,6 +66,30 @@ if (!skill.includes('license: MIT')) {
 if (!skill.includes(productName) || !skill.includes(commandName) || !skill.includes(tokenEnv)) {
   errors.push(`skills/${skillName}/SKILL.md must describe ${productName}, ${commandName}, and ${tokenEnv}.`);
 }
+for (const expected of [
+  installUrl,
+  windowsInstallUrl,
+  `command -v ${commandName}`,
+  `${commandName} version`,
+  `${commandName} update`,
+  `${commandName} --json doctor`,
+  `${commandName} --json whoami`,
+  `${commandName} login --manual`,
+  `${commandName} api ls --plain`,
+  `${commandName} api --docs`,
+  `${commandName} api --spec`,
+  `${commandName} --json api call`,
+  `${commandName} markdown get`,
+  `${commandName} markdown put`,
+  `${commandName} --json file upload`,
+  'BUILDIN_INSTALL_DIR',
+  'BUILDIN_VERSION',
+  'BUILDIN_CLI_RELEASE_BASE_URL',
+  'BUILDIN_BASE_URL',
+  'BUILDIN_CONFIG_DIR',
+]) {
+  expectIncludes(skill, expected, `skills/${skillName}/SKILL.md`);
+}
 
 const openaiYaml = await readText(`skills/${skillName}/agents/openai.yaml`);
 for (const field of ['display_name', 'short_description', 'default_prompt']) {
@@ -74,6 +100,8 @@ for (const field of ['display_name', 'short_description', 'default_prompt']) {
 if (!openaiYaml.includes(`$${skillName}`)) {
   errors.push(`skills/${skillName}/agents/openai.yaml default_prompt must mention $${skillName}.`);
 }
+expectIncludes(openaiYaml, 'install', `skills/${skillName}/agents/openai.yaml`);
+expectIncludes(openaiYaml, productName, `skills/${skillName}/agents/openai.yaml`);
 
 for (const file of await listFiles(root)) {
   const relativeFile = path.relative(root, file).split(path.sep).join('/');
