@@ -1,10 +1,10 @@
 # Buildin CLI Skill
 
-Private Codex plugin bundle for the Buildin CLI agent skill.
+Private Buildin CLI agent skill.
 
 ## Install
 
-Install this private repository as a plugin or install the skill directly:
+Install this private repository:
 
 ```bash
 npx skills add next-space/buildin-skill --skill buildin-cli
@@ -28,4 +28,3 @@ for authentication, and avoid raw `curl` calls for Buildin API work.
 ```bash
 npm run check
 ```
-
