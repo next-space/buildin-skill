@@ -16,16 +16,38 @@ Buildin CDN when the command is missing or outdated.
 Use only the Buildin command, Buildin base URL, `BUILDIN_*` environment
 variables, and Buildin credential store for Buildin work.
 
-## Install or update first
+## Mandatory preflight
 
-Before using `buildin`, verify that the binary is available:
+When this skill is selected for any Buildin task, complete this preflight before
+API work, searches, reads, writes, counts, uploads, or endpoint-specific
+planning:
+
+1. Ensure the released CLI binary is installed:
 
 ```bash
 command -v buildin >/dev/null 2>&1 || curl -fsSL https://cdn.buildin.ai/buildin-cli/install | bash
 buildin version
 ```
 
-On Windows PowerShell:
+2. Verify authentication and active identity:
+
+```bash
+buildin --json doctor
+buildin --json whoami
+```
+
+Continue only when the checks show authenticated Buildin credentials. If
+authentication is missing or invalid, stop before making API calls or drawing
+conclusions from incomplete data. Tell the user to run:
+
+```bash
+buildin login --manual
+```
+
+or set `BUILDIN_TOKEN`, then state the exact command or workflow to rerun after
+authentication is available.
+
+On Windows PowerShell, install with:
 
 ```powershell
 irm https://cdn.buildin.ai/buildin-cli/install.ps1 | iex
@@ -81,7 +103,8 @@ buildin --json doctor
 buildin --json whoami
 ```
 
-If no token is available and the user wants an interactive setup:
+If no token is available, do not proceed with Buildin API work. Ask the user to
+authenticate with:
 
 ```bash
 buildin login --manual
