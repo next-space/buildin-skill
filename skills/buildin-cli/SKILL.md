@@ -37,15 +37,37 @@ buildin --json whoami
 ```
 
 Continue only when the checks show authenticated Buildin credentials. If
-authentication is missing or invalid, stop before making API calls or drawing
-conclusions from incomplete data. Tell the user to run:
+authentication is missing or invalid, do not immediately tell the user to run a
+login command. Choose and start the authentication path yourself:
+
+- If `BUILDIN_TOKEN` is already set, rerun `buildin --json doctor` and
+  `buildin --json whoami`; do not ask for another login.
+- If the session is a local desktop shell where a browser can be opened, run
+  `buildin login --browser` yourself, let the user finish the browser approval,
+  then rerun `buildin --json doctor` and `buildin --json whoami`. Treat Codex
+  desktop or a local macOS/Windows/Linux terminal as browser-capable unless
+  SSH, CI, or headless environment variables clearly say otherwise. If unsure,
+  try browser login first and fall back only after it fails or times out.
+- If the session is SSH, CI, headless, or browser login times out, run
+  `buildin --json login --manual` yourself and summarize its setup instructions.
+  Manual setup produces a token workflow; it does not authenticate the CLI by
+  itself. Stop until `BUILDIN_TOKEN` or saved credentials are available.
+
+Do not run plain `buildin login` in agent sessions because it can block on an
+interactive method prompt. Do not make API calls or draw conclusions from
+incomplete data until authentication is verified.
+
+Use this browser login command when the environment supports it:
 
 ```bash
-buildin login --manual
+buildin login --browser
 ```
 
-or set `BUILDIN_TOKEN`, then state the exact command or workflow to rerun after
-authentication is available.
+Use manual setup only for headless or remote environments:
+
+```bash
+buildin --json login --manual
+```
 
 On Windows PowerShell, install with:
 
@@ -90,7 +112,9 @@ or command coverage, run help first.
 
 ## Authentication and configuration
 
-Check `BUILDIN_TOKEN` before asking the user to log in. Credential precedence is:
+Select authentication automatically; do not ask the user to choose a login
+method unless both browser and token setup are impossible. Credential precedence
+is:
 
 1. `--token <token>`
 2. `BUILDIN_TOKEN`
@@ -103,12 +127,16 @@ buildin --json doctor
 buildin --json whoami
 ```
 
-If no token is available, do not proceed with Buildin API work. Ask the user to
-authenticate with:
+If no token is available, first try `buildin login --browser` from local desktop
+sessions. Use manual setup only when browser OAuth is not possible:
 
 ```bash
-buildin login --manual
+buildin --json login --manual
 ```
+
+Do not ask the user to paste bearer tokens into chat. Ask them to provide
+credentials through `BUILDIN_TOKEN`, saved login credentials, or an approved
+secret channel, then rerun `buildin --json doctor` and `buildin --json whoami`.
 
 Common environment variables:
 
