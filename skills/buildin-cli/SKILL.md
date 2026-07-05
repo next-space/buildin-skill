@@ -42,12 +42,14 @@ login command. Choose and start the authentication path yourself:
 
 - If `BUILDIN_TOKEN` is already set, rerun `buildin --json doctor` and
   `buildin --json whoami`; do not ask for another login.
-- If the session is a local desktop shell where a browser can be opened, run
+- If the session is a local GUI or browser-capable environment, run
   `buildin login --browser` yourself, let the user finish the browser approval,
-  then rerun `buildin --json doctor` and `buildin --json whoami`. Treat Codex
-  desktop or a local macOS/Windows/Linux terminal as browser-capable unless
-  SSH, CI, or headless environment variables clearly say otherwise. If unsure,
-  try browser login first and fall back only after it fails or times out.
+  then rerun `buildin --json doctor` and `buildin --json whoami`. Treat local
+  macOS/Windows/Linux desktop sessions, shells with `DISPLAY` or
+  `WAYLAND_DISPLAY`, or environments with a working system browser opener as
+  browser-capable unless SSH, CI, container, or headless environment variables
+  clearly say otherwise. If unsure, try browser login first and fall back only
+  after it fails or times out.
 - If the session is SSH, CI, headless, or browser login times out, run
   `buildin --json login --manual` yourself and summarize its setup instructions.
   Manual setup produces a token workflow; it does not authenticate the CLI by
@@ -127,8 +129,9 @@ buildin --json doctor
 buildin --json whoami
 ```
 
-If no token is available, first try `buildin login --browser` from local desktop
-sessions. Use manual setup only when browser OAuth is not possible:
+If no token is available, first try `buildin login --browser` from local GUI or
+browser-capable sessions. Use manual setup only when browser OAuth is not
+possible:
 
 ```bash
 buildin --json login --manual
