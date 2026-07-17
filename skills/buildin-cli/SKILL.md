@@ -1,7 +1,24 @@
 ---
 name: buildin-cli
 description: Use when an agent needs to call the Buildin API through the Buildin CLI, authenticate Buildin, upload a file, create or update a page, query a database, search content, edit Markdown page content, or any task involving the `buildin` command.
-license: MIT
+metadata:
+  openclaw:
+    requires:
+      bins:
+        - buildin
+    envVars:
+      - name: BUILDIN_TOKEN
+        required: false
+        description: Optional Buildin bearer token; browser login or saved CLI credentials may be used instead.
+      - name: BUILDIN_BASE_URL
+        required: false
+        description: Optional Buildin API base URL.
+      - name: BUILDIN_CONFIG_DIR
+        required: false
+        description: Optional directory containing Buildin CLI credentials and configuration.
+      - name: BUILDIN_USER_AGENT
+        required: false
+        description: Optional suffix for the Buildin CLI user agent.
 ---
 
 # Buildin CLI
@@ -25,7 +42,12 @@ planning:
 1. Ensure the released CLI binary is installed:
 
 ```bash
-command -v buildin >/dev/null 2>&1 || curl -fsSL https://cdn.buildin.ai/buildin-cli/install | bash
+if ! command -v buildin >/dev/null 2>&1; then
+  buildin_install_script="$(mktemp)"
+  curl -fsSL --proto '=https' --tlsv1.2 https://cdn.buildin.ai/buildin-cli/install -o "$buildin_install_script"
+  bash "$buildin_install_script"
+  rm -f "$buildin_install_script"
+fi
 buildin version
 ```
 
@@ -74,7 +96,10 @@ buildin --json login --manual
 On Windows PowerShell, install with:
 
 ```powershell
-irm https://cdn.buildin.ai/buildin-cli/install.ps1 | iex
+$buildinInstallScript = Join-Path ([System.IO.Path]::GetTempPath()) "buildin-cli-install.ps1"
+Invoke-WebRequest https://cdn.buildin.ai/buildin-cli/install.ps1 -OutFile $buildinInstallScript
+& $buildinInstallScript
+Remove-Item $buildinInstallScript
 buildin version
 ```
 
