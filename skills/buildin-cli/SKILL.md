@@ -28,7 +28,7 @@ databases, search, Markdown content, and files.
 
 The CLI source repository may be private. Do not ask the user to clone source
 code before using the CLI. Install or update the released binary from the
-Buildin CDN when the command is missing or outdated.
+official Buildin CDN only after the user explicitly approves it.
 
 Use only the Buildin command, Buildin base URL, `BUILDIN_*` environment
 variables, and Buildin credential store for Buildin work.
@@ -39,19 +39,22 @@ When this skill is selected for any Buildin task, complete this preflight before
 API work, searches, reads, writes, counts, uploads, or endpoint-specific
 planning:
 
-1. Ensure the released CLI binary is installed:
+1. Inspect whether the CLI is available without installing or updating it:
 
 ```bash
-if ! command -v buildin >/dev/null 2>&1; then
-  buildin_install_script="$(mktemp)"
-  curl -fsSL --proto '=https' --tlsv1.2 https://cdn.buildin.ai/buildin-cli/install -o "$buildin_install_script"
-  bash "$buildin_install_script"
-  rm -f "$buildin_install_script"
+if command -v buildin >/dev/null 2>&1; then
+  buildin version
+else
+  echo "Buildin CLI is not installed"
 fi
-buildin version
 ```
 
-2. Verify authentication and active identity:
+If the CLI is missing or outdated, explain that the official installer is
+available at `https://cdn.buildin.ai/buildin-cli/install` (or
+`https://cdn.buildin.ai/buildin-cli/install.ps1` on Windows). Do not download,
+execute, or update it until the user explicitly approves that action.
+
+2. If the CLI is installed, inspect authentication and active identity:
 
 ```bash
 buildin --json doctor
@@ -59,55 +62,38 @@ buildin --json whoami
 ```
 
 Continue only when the checks show authenticated Buildin credentials. If
-authentication is missing or invalid, do not immediately tell the user to run a
-login command. Choose and start the authentication path yourself:
+authentication is missing or invalid, do not start a login flow automatically.
+Explain the available options and wait for the user's explicit choice:
 
 - If `BUILDIN_TOKEN` is already set, rerun `buildin --json doctor` and
   `buildin --json whoami`; do not ask for another login.
-- If the session is a local GUI or browser-capable environment, run
-  `buildin login --browser` yourself, let the user finish the browser approval,
-  then rerun `buildin --json doctor` and `buildin --json whoami`. Treat local
-  macOS/Windows/Linux desktop sessions, shells with `DISPLAY` or
-  `WAYLAND_DISPLAY`, or environments with a working system browser opener as
-  browser-capable unless SSH, CI, container, or headless environment variables
-  clearly say otherwise. If unsure, try browser login first and fall back only
-  after it fails or times out.
-- If the session is SSH, CI, headless, or browser login times out, run
-  `buildin --json login --manual` yourself and summarize its setup instructions.
-  Manual setup produces a token workflow; it does not authenticate the CLI by
-  itself. Stop until `BUILDIN_TOKEN` or saved credentials are available.
+- Browser login: `buildin login --browser`.
+- Manual setup for headless environments: `buildin --json login --manual`.
+- Configure `BUILDIN_TOKEN` or saved credentials through an approved secret
+  channel.
 
 Do not run plain `buildin login` in agent sessions because it can block on an
 interactive method prompt. Do not make API calls or draw conclusions from
-incomplete data until authentication is verified.
+incomplete data until authentication is verified. After the user explicitly
+approves a login method, run only that selected method and then rerun
+`buildin --json doctor` and `buildin --json whoami`.
 
-Use this browser login command when the environment supports it:
+Use this browser login command only after the user explicitly selects browser
+login:
 
 ```bash
 buildin login --browser
 ```
 
-Use manual setup only for headless or remote environments:
+Use manual setup only after the user explicitly selects it for a headless or
+remote environment:
 
 ```bash
 buildin --json login --manual
 ```
 
-On Windows PowerShell, install with:
-
-```powershell
-$buildinInstallScript = Join-Path ([System.IO.Path]::GetTempPath()) "buildin-cli-install.ps1"
-Invoke-WebRequest https://cdn.buildin.ai/buildin-cli/install.ps1 -OutFile $buildinInstallScript
-& $buildinInstallScript
-Remove-Item $buildinInstallScript
-buildin version
-```
-
-If a command is missing or help output looks stale, run:
-
-```bash
-buildin update
-```
+If a command is missing or help output looks stale, explain that `buildin update`
+can update the CLI and wait for explicit user approval before running it.
 
 Useful install overrides:
 
@@ -139,9 +125,7 @@ or command coverage, run help first.
 
 ## Authentication and configuration
 
-Select authentication automatically; do not ask the user to choose a login
-method unless both browser and token setup are impossible. Credential precedence
-is:
+The CLI resolves credentials in this precedence order:
 
 1. `--token <token>`
 2. `BUILDIN_TOKEN`
@@ -154,9 +138,9 @@ buildin --json doctor
 buildin --json whoami
 ```
 
-If no token is available, first try `buildin login --browser` from local GUI or
-browser-capable sessions. Use manual setup only when browser OAuth is not
-possible:
+If no valid credentials are available, offer browser login, manual setup, or an
+approved `BUILDIN_TOKEN` secret path. Wait for the user to select one before
+starting authentication:
 
 ```bash
 buildin --json login --manual
@@ -288,9 +272,9 @@ parameters. Use `--header NAME=VALUE` for headers such as `If-Match`.
 
 ## Troubleshooting
 
-- Command not found: install from `https://cdn.buildin.ai/buildin-cli/install`.
-- Unknown command or option: run `buildin update`, then `buildin <command> --help`.
+- Command not found: offer the official installer at `https://cdn.buildin.ai/buildin-cli/install` and wait for explicit approval before using it.
+- Unknown command or option: ask approval before running `buildin update`, then run `buildin <command> --help`.
 - Authentication failure: run `buildin --json doctor`, check `BUILDIN_TOKEN`,
-  then run `buildin login --manual` if needed.
+  offer `buildin login --manual` if needed and wait for explicit approval.
 - Unexpected API shape: run `buildin api --docs <PATH> -X <METHOD>` and
   `buildin api --spec <PATH> -X <METHOD>` before retrying.
