@@ -3,9 +3,6 @@ name: buildin-cli
 description: Use when an agent needs to call the Buildin API through the Buildin CLI, authenticate Buildin, upload a file, create or update a page, query a database, search content, edit Markdown page content, or any task involving the `buildin` command.
 metadata:
   openclaw:
-    requires:
-      bins:
-        - buildin
     envVars:
       - name: BUILDIN_TOKEN
         required: false
@@ -35,9 +32,8 @@ variables, and Buildin credential store for Buildin work.
 
 ## Mandatory preflight
 
-When this skill is selected for any Buildin task, complete this preflight before
-API work, searches, reads, writes, counts, uploads, or endpoint-specific
-planning:
+Complete this preflight before a remote Buildin API call. CLI help, endpoint
+documentation, and offline planning do not require authentication.
 
 1. Inspect whether the CLI is available without installing or updating it:
 
@@ -53,6 +49,13 @@ If the CLI is missing or outdated, explain that the official installer is
 available at `https://cdn.buildin.ai/buildin-cli/install` (or
 `https://cdn.buildin.ai/buildin-cli/install.ps1` on Windows). Do not download,
 execute, or update it until the user explicitly approves that action.
+
+After approval, use only the official URL and a user-approved version. Download
+an installer to a temporary file; show its source, version, and SHA-256 hash;
+and compare it with an official checksum or signature before execution. If no
+official integrity data is available, stop and offer manual installation rather
+than executing an unverified installer. Remove temporary installer files after
+the attempt.
 
 2. If the CLI is installed, inspect authentication and active identity:
 
@@ -123,7 +126,7 @@ request fields:
 If you are unsure about syntax, request body fields, pagination, auth source,
 or command coverage, run help first.
 
-## Authentication and configuration
+## Credentials and configuration
 
 The CLI resolves credentials in this precedence order:
 
@@ -131,24 +134,15 @@ The CLI resolves credentials in this precedence order:
 2. `BUILDIN_TOKEN`
 3. saved login credentials in the Buildin credential store
 
-Use these checks:
-
-```bash
-buildin --json doctor
-buildin --json whoami
-```
+This is CLI resolution behavior, not authorization to expose a credential. Do
+not pass `--token` in agent commands, logs, or shared shells: it can leak via
+process listings or shell history. Do not ask users to paste bearer tokens into
+chat. Use preconfigured `BUILDIN_TOKEN`, saved credentials, or an approved secret
+channel; redact any credential that appears in command output.
 
 If no valid credentials are available, offer browser login, manual setup, or an
-approved `BUILDIN_TOKEN` secret path. Wait for the user to select one before
-starting authentication:
-
-```bash
-buildin --json login --manual
-```
-
-Do not ask the user to paste bearer tokens into chat. Ask them to provide
-credentials through `BUILDIN_TOKEN`, saved login credentials, or an approved
-secret channel, then rerun `buildin --json doctor` and `buildin --json whoami`.
+approved secret path and wait for the user to select one. After the selected
+login succeeds, rerun `buildin --json doctor` and `buildin --json whoami`.
 
 Common environment variables:
 
@@ -168,12 +162,25 @@ product defaults, retries, and error formatting stay consistent.
 - Keep Markdown replacement content in local files and pass it with `--file <file>`.
 - Prefer domain commands over `api call`; `buildin api --docs` names a
   recommended domain command when one exists.
-- Before write operations, confirm IDs, file paths, URLs, and body files come
-  from user-authorized input.
 - For paginated commands, inspect JSON output for cursors and repeat with the
   command's cursor option.
-- The CLI intentionally rejects DELETE API calls. Do not work around that for
-  destructive operations unless the user explicitly asks for a different tool.
+
+## Write safety
+
+Before any remote create, update, append, upload, replace, or raw API write:
+
+1. Confirm the exact target, operation, and expected impact (including record
+   count, affected blocks, or uploaded files).
+2. Read the current target first when feasible. For a Markdown replacement,
+   compare the existing content unless the user explicitly authorized a full
+   replacement. Use `--if-match` when the CLI exposes a version or ETag.
+3. If the user did not provide both an exact target and the intended content,
+   present a short change summary and wait for confirmation.
+4. Confirm files and external URLs are user-authorized and do not contain
+   credentials or private data not intended for the target workspace.
+
+The CLI intentionally rejects DELETE API calls. This Skill does not execute or
+suggest bypasses; use a dedicated deletion workflow with a second confirmation.
 
 ## Common workflows
 
@@ -220,6 +227,8 @@ buildin --json block update <block_id> --body block-patch.json
 ```bash
 buildin --json database get <database_id>
 buildin --json database query <database_id> --body query.json
+buildin --json database create --body database.json
+buildin --json database update <database_id> --body patch.json
 buildin --json page property get <page_id> <property_id>
 ```
 
@@ -267,14 +276,16 @@ buildin api --spec /v2/blocks/{block_id}/children -X PATCH
 buildin --json api call PATCH /v2/blocks/:block_id/children --param block_id=<block_id> --body body.json
 ```
 
-`--param` fills path placeholders first; remaining keys become query
-parameters. Use `--header NAME=VALUE` for headers such as `If-Match`.
+For `POST`, `PUT`, or `PATCH`, read `--docs` and `--spec` first and apply the
+write-safety rules above. `--param` fills path placeholders first; remaining
+keys become query parameters. Use `--header NAME=VALUE` only for non-secret
+headers such as `If-Match`; never put credentials or sessions in headers.
 
 ## Troubleshooting
 
 - Command not found: offer the official installer at `https://cdn.buildin.ai/buildin-cli/install` and wait for explicit approval before using it.
 - Unknown command or option: ask approval before running `buildin update`, then run `buildin <command> --help`.
-- Authentication failure: run `buildin --json doctor`, check `BUILDIN_TOKEN`,
-  offer `buildin login --manual` if needed and wait for explicit approval.
+- Authentication failure: run `buildin --json doctor`, then offer an approved
+  credential or login path.
 - Unexpected API shape: run `buildin api --docs <PATH> -X <METHOD>` and
   `buildin api --spec <PATH> -X <METHOD>` before retrying.

@@ -1,27 +1,15 @@
 # Buildin CLI Skill
 
-Private Buildin CLI agent skill.
+Use the Buildin CLI safely for authorized Buildin V2 API and content tasks.
 
-## Install
-
-Install this private repository:
+## Install from ClawHub
 
 ```bash
-npx skills add next-space/buildin-skill --skill buildin-cli
+openclaw skills install @buildin/buildin-skills
 ```
 
-Direct path:
-
-```bash
-npx skills add https://github.com/next-space/buildin-skill/tree/main/skills/buildin-cli
-```
-
-## Usage
-
-Use this skill when an agent needs to call the Buildin V2 API through the
-`buildin` command. The skill instructs agents to inspect CLI help first, use
-`--json` for machine-readable output, use `BUILDIN_TOKEN` or saved credentials
-for authentication, and avoid raw `curl` calls for Buildin API work.
+The Skill checks CLI and authentication state first. Installation, updates,
+login, and remote writes require explicit user approval.
 
 ## Development
 
