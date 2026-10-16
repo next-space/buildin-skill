@@ -248,6 +248,12 @@ For idempotent creates, use `--idempotency-key <key>`.
 
 ### Blocks and children
 
+For callout/toggle first-line edits, blank placeholders or moving a title out of
+a child paragraph, read [Own text and children](references/block-own-text.md).
+`callout.rich_text` is the callout first editable line; `toggle.rich_text` is the
+folding title. `children` are independent blocks. Read both the block itself and
+its children; Markdown alone cannot establish equivalent layout.
+
 ```bash
 buildin --json block get <block_id>
 buildin --json block children <block_id>
